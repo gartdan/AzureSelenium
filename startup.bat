@@ -1,0 +1,2 @@
+cd c:\selenium
+java -jar selenium-server-standalone.jar -role node -hub http://40.122.131.150:4444/grid/register -browser "browserName=chrome,maxInstances=5" -browser "browserName=firefox,maxInstances=5"
