@@ -34,8 +34,6 @@ function Disable-UserAccessControl {
 }
 
 
-#url of the hub we are being added to an agent to
-$hubUrl = "http://40.122.131.150:4444/grid/register"
 #hostname of this VM - change the domain if you are using Resource Manager or not
 $hostName = $env:ComputerName.ToLower() + ".cloudapp.net"
 $seleniumDestinationFolder = "c:\selenium\"
@@ -49,25 +47,25 @@ Write-Output "Creating Directories"
 
 Start-Transcript -path $logFile -append
 Write-Output "Perfoming chocolatey install"
-#Set-ExecutionPolicy ByPass
-iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
 
 
+Write-Output "Downloading jar file"
 $outFile = $seleniumDestinationFolder + "selenium-server-standalone.jar"
 wget http://goo.gl/PJUZfa -OutFile $outFile 
 
 
-
+Write-Output "Downloading IE Driver"
 $IEDriverZip="IEDriverServer_x64_2.48.0.zip"
 $IEDriverZipPath=$driverDestinationFolder + $IEDriverZip
 $IEDriverUrl="http://selenium-release.storage.googleapis.com/2.48/" + $IEDriverZip
 Invoke-WebRequest $IEDriverUrl -OutFile $IEDriverZipPath
 Extract-Zip -zipfilename $IEDriverZipPath -destination $driverDestinationFolder 
 
-
+Write-Output "Setting environment variables"
 [Environment]::SetEnvironmentVariable("Path", $env:Path + ";" + $seleniumDestinationFolder, [EnvironmentVariableTarget]::Machine)
 [Environment]::SetEnvironmentVariable("Path", $env:Path + ";" + $driverDestinationFolder, [EnvironmentVariableTarget]::Machine)
 
+Write-Output "Setting firewall rules"
 netsh advfirewall firewall add rule name="SeleniumIn" dir=in action=allow protocol=TCP localport=4444
 netsh advfirewall firewall add rule name="SeleniumIn2" dir=in action=allow protocol=TCP localport=5555
 netsh advfirewall firewall add rule name="SeleniumOut" dir=out action=allow protocol=TCP localport=4444
@@ -76,37 +74,22 @@ netsh advfirewall firewall add rule name="HttpIn" dir=in action=allow protocol=T
 netsh advfirewall firewall add rule name="HttpIn2" dir=in action=allow protocol=TCP localport=443
 netsh advfirewall firewall add rule name="PSRemoteIn" dir=in action=allow protocol=TCP localport=5985-5986
 
+Write-Output "Disabling UAC"
 Disable-UserAccessControl
 Disable-InternetExplorerESC
 
 
 # Create Start.bat file 
-
 $startupFile = @"
 cd c:\selenium
-java -jar selenium-server-standalone.jar -role node -hub $hubUrl -host $hostName -browser "browserName=chrome,maxInstances=5" -browser "browserName=firefox,maxInstances=5"
+java -jar selenium-server-standalone.jar -port 4444 -role hub -nodeTimeout 600
 "@
 $outFile = $seleniumDestinationFolder + "startnode.bat"
 $startupFile > $outFile
-
 
 #$outFile = $seleniumDestinationFolder + "startnode.bat"
 #wget $startupBat -OutFile $outFile 
  
 schtasks.exe /Create /SC ONLOGON /TN "StartSeleniumNode" /TR "cmd /c ""C:\selenium\startnode.bat"""
-    
-    
-#install packages
-choco install WindowsAzurePowershell -y
-choco install googlechrome -y
-choco install firefox -y
-choco install phantomjs -y
-choco install javaruntime -y
-choco install seleniumiedriver -y
-choco install notepadplusplus.install -y
-choco install wget -y
-choco install curl -y
-choco install nssm -y    
-
 Stop-Transcript
-Restart-Computer
+
