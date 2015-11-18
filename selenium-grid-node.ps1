@@ -104,5 +104,14 @@ $startupFile > $outFile
 #wget $startupBat -OutFile $outFile 
  
 schtasks.exe /Create /SC ONLOGON /TN "StartSeleniumNode" /TR "cmd /c ""C:\selenium\startnode.bat"""
+    
+Write-Output "Installing packages" 
+#install packages
+choco install WindowsAzurePowershell -y
+choco install googlechrome -y
+choco install firefox -y
+choco install phantomjs -y
+choco install javaruntime -y    
+
 Stop-Transcript
 Restart-Computer
