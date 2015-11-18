@@ -47,7 +47,8 @@ Write-Output "Creating Directories"
 
 Start-Transcript -path $logFile -append
 Write-Output "Perfoming chocolatey install"
-
+#Set-ExecutionPolicy ByPass
+iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
 
 Write-Output "Downloading jar file"
 $outFile = $seleniumDestinationFolder + "selenium-server-standalone.jar"
@@ -60,6 +61,13 @@ $IEDriverZipPath=$driverDestinationFolder + $IEDriverZip
 $IEDriverUrl="http://selenium-release.storage.googleapis.com/2.48/" + $IEDriverZip
 Invoke-WebRequest $IEDriverUrl -OutFile $IEDriverZipPath
 Extract-Zip -zipfilename $IEDriverZipPath -destination $driverDestinationFolder 
+
+Write-Output "Downloading Chrome Driver"
+$chromeDriverZip = "chromedriver_win32.zip";
+$chromeDriverZipPath = $driverDestinationFolder + $chromeDriverZip;
+$chromeDriverUrl = "http://chromedriver.storage.googleapis.com/2.20/"+ $chromeDriverZip;
+Invoke-WebRequest $chromeDriverUrl -OutFile $chromeDriverZipPath
+Extract-Zip -zipfilename $chromeDriverZipPath -destination $driverDestinationFolder
 
 Write-Output "Setting environment variables"
 [Environment]::SetEnvironmentVariable("Path", $env:Path + ";" + $seleniumDestinationFolder, [EnvironmentVariableTarget]::Machine)
@@ -79,6 +87,7 @@ Disable-UserAccessControl
 Disable-InternetExplorerESC
 
 
+Write-Output "Writing the startup file"
 # Create Start.bat file 
 $startupFile = @"
 cd c:\selenium
@@ -91,5 +100,16 @@ $startupFile > $outFile
 #wget $startupBat -OutFile $outFile 
  
 schtasks.exe /Create /SC ONLOGON /TN "StartSeleniumNode" /TR "cmd /c ""C:\selenium\startnode.bat"""
+
+Write-Output "Installing packages" 
+#install packages
+choco install WindowsAzurePowershell -y
+choco install googlechrome -y
+choco install firefox -y
+choco install phantomjs -y
+choco install javaruntime -y
+
+Write-Output "Restarting computer"
 Stop-Transcript
+Restart-Computer
 
