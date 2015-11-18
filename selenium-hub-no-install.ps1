@@ -79,6 +79,7 @@ Disable-UserAccessControl
 Disable-InternetExplorerESC
 
 
+
 # Create Start.bat file 
 $startupFile = @"
 cd c:\selenium
@@ -92,4 +93,4 @@ $startupFile > $outFile
  
 schtasks.exe /Create /SC ONLOGON /TN "StartSeleniumNode" /TR "cmd /c ""C:\selenium\startnode.bat"""
 Stop-Transcript
-
+Restart-Computer

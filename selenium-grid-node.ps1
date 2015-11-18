@@ -91,13 +91,17 @@ Disable-UserAccessControl
 Disable-InternetExplorerESC
 
 
+
 # Create Start.bat file 
-$startupFile = @"cd c:\selenium
-java -jar selenium-server-standalone.jar -role node -hub $hubUrl -host $hostName -browser "browserName=chrome,maxInstances=5" -browser "browserName=firefox,maxInstances=5" -browser "browserName=internet explorer,maxInstances=3"
+$startupFile = @"
+cd c:\selenium
+java -jar selenium-server-standalone.jar -role node -hub $hubUrl -host $hostName -browser "browserName=internet explorer,maxInstances=3" -browser "browserName=chrome,maxInstances=5" -browser "browserName=firefox,maxInstances=5"
 "@
 $outFile = $seleniumDestinationFolder + "startnode.bat"
 $startupFile > $outFile
 
+#$outFile = $seleniumDestinationFolder + "startnode.bat"
+#wget $startupBat -OutFile $outFile 
  
 schtasks.exe /Create /SC ONLOGON /TN "StartSeleniumNode" /TR "cmd /c ""C:\selenium\startnode.bat"""
 Stop-Transcript
