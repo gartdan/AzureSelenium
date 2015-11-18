@@ -92,8 +92,7 @@ Disable-InternetExplorerESC
 
 
 # Create Start.bat file 
-$startupFile = @"
-cd c:\selenium
+$startupFile = @"cd c:\selenium
 java -jar selenium-server-standalone.jar -role node -hub $hubUrl -host $hostName -browser "browserName=chrome,maxInstances=5" -browser "browserName=firefox,maxInstances=5" -browser "browserName=internet explorer,maxInstances=3"
 "@
 $outFile = $seleniumDestinationFolder + "startnode.bat"
